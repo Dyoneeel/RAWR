@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Same head content as login.html -->
+    <title>RAWR - Join the Pride | Register</title>
+    <meta name="description" content="Join the wildest crypto casino on the blockchain. Register to start earning RAWR tokens.">
+    <!-- Same styles as login.html -->
+</head>
+<body>
+    <div class="auth-bg"></div>
+    <div class="floating-paws" id="floatingPaws"></div>
+
+    <a href="#" class="back-home" onclick="goHome()">
+        ← Back to RAWR
+    </a>
+
+    <div class="auth-container">
+        <div class="logo-header">
+            <div class="lion-emoji" onclick="roarEffect()">🦁</div>
+            <h1 class="logo">RAWR</h1>
+            <p class="tagline">Join the pride of crypto lions</p>
+        </div>
+
+        <form class="form" id="registerForm">
+            <div class="input-group">
+                <label class="input-label">Username</label>
+                <input type="text" class="input-field" placeholder="Choose a roaring username" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Email</label>
+                <input type="email" class="input-field" placeholder="Enter your email" required>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Password</label>
+                <div style="position: relative;">
+                    <input type="password" class="input-field" id="registerPassword" placeholder="Create a strong password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('registerPassword')">👁️</button>
+                </div>
+            </div>
+
+            <div class="input-group">
+                <label class="input-label">Confirm Password</label>
+                <div style="position: relative;">
+                    <input type="password" class="input-field" id="confirmPassword" placeholder="Confirm your password" required>
+                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPassword')">👁️</button>
+                </div>
+            </div>
+
+            <div class="terms-check">
+                <input type="checkbox" class="checkbox" id="termsCheck" required>
+                <label for="termsCheck" class="terms-text">
+                    I agree to the <a href="#" onclick="showTerms()">Terms</a> and <a href="#" onclick="showPrivacy()">Privacy Policy</a>
+                </label>
+            </div>
+
+            <button type="submit" class="submit-btn">
+                <span class="loading-spinner" id="registerSpinner"></span>
+                🚀 Join the Pride
+            </button>
+        </form>
+
+        <div class="divider">
+            <span>Already a member?</span>
+        </div>
+
+        <div class="switch-page">
+            <p>Have an account? <a href="login.html">Enter the Den</a></p>
+        </div>
+    </div>
+
+    <div class="notification" id="notification">
+        <span class="notification-icon">🦁</span>
+        <span class="notification-text"></span>
+    </div>
+
+    <script>
+        // Same JavaScript as login.html with register-specific functions
+        document.addEventListener('DOMContentLoaded', () => {
+            createFloatingPaws();
+            showNotification('Join the pride of crypto lions!', 'info');
+        });
+
+        // ... (Same shared functions as login.html) ...
+
+        function showTerms() {
+            showNotification('Terms of Service displayed', 'info');
+        }
+
+        function showPrivacy() {
+            showNotification('Privacy Policy displayed', 'info');
+        }
+
+        // Register form submission
+        document.getElementById('registerForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const password = document.getElementById('registerPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (password !== confirmPassword) {
+                showNotification('Passwords do not match! 🚫', 'error');
+                return;
+            }
+            
+            const submitBtn = this.querySelector('.submit-btn');
+            const spinner = document.getElementById('registerSpinner');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            spinner.style.display = 'inline-block';
+            
+            // Simulate registration process
+            setTimeout(() => {
+                showNotification('Account created! Welcome to the pride! 🎉', 'success');
+                
+                // Hide loading state
+                submitBtn.disabled = false;
+                spinner.style.display = 'none';
+                
+                // Redirect to login
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 1500);
+            }, 2000);
+        });
+    </script>
+</body>
+</html>

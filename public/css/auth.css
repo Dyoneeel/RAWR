@@ -1,0 +1,218 @@
+:root {
+    --jungle-dark: #0a1f0a;
+    --jungle-medium: #1e3c1e;
+    --jungle-light: #2d5a2d;
+    --gold-primary: #d4af37;
+    --gold-secondary: #f9e076;
+    --accent-red: #d9534f;
+    --text-light: #f8f9fa;
+    --text-muted: #adb5bd;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Orbitron', sans-serif;
+}
+
+body {
+    background: linear-gradient(135deg, var(--jungle-dark), var(--jungle-medium));
+    color: var(--text-light);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+}
+
+.jungle-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../assets/images/jungle-bg.jpg');
+    background-size: cover;
+    background-position: center;
+    opacity: 0.15;
+    z-index: -1;
+}
+
+.auth-container {
+    max-width: 500px;
+    margin: 5rem auto;
+    padding: 2.5rem;
+    background: rgba(10, 31, 10, 0.85);
+    border: 2px solid var(--gold-primary);
+    border-radius: 15px;
+    box-shadow: 0 0 25px rgba(0, 0, 0, 0.5);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(5px);
+}
+
+.auth-container::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, transparent 20%, var(--jungle-dark) 70%);
+    z-index: -1;
+}
+
+.logo-header {
+    text-align: center;
+    margin-bottom: 2rem;
+}
+
+.logo-header h1 {
+    font-size: 2.5rem;
+    color: var(--gold-primary);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    text-shadow: 0 0 10px rgba(212, 175, 55, 0.5);
+    margin-bottom: 0.5rem;
+}
+
+.logo-header p {
+    color: var(--text-muted);
+    font-size: 1rem;
+}
+
+.auth-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group {
+    position: relative;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+    color: var(--gold-secondary);
+}
+
+.form-group input {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(30, 60, 30, 0.7);
+    border: 1px solid var(--jungle-light);
+    border-radius: 8px;
+    color: var(--text-light);
+    font-size: 1rem;
+    transition: all 0.3s ease;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: var(--gold-primary);
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+}
+
+.form-group .password-toggle {
+    position: absolute;
+    right: 15px;
+    top: 40px;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: color 0.3s;
+}
+
+.form-group .password-toggle:hover {
+    color: var(--gold-secondary);
+}
+
+.btn {
+    padding: 1rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.btn-primary {
+    background: var(--gold-primary);
+    color: var(--jungle-dark);
+    box-shadow: 0 4px 0 rgba(180, 150, 40, 0.8);
+}
+
+.btn-primary:hover {
+    background: var(--gold-secondary);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 0 rgba(180, 150, 40, 0.8);
+}
+
+.btn-primary:active {
+    transform: translateY(2px);
+    box-shadow: 0 2px 0 rgba(180, 150, 40, 0.8);
+}
+
+.auth-links {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.auth-links a {
+    color: var(--gold-secondary);
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+.auth-links a:hover {
+    color: var(--gold-primary);
+    text-decoration: underline;
+}
+
+.message {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+}
+
+.message.error {
+    background: rgba(217, 83, 79, 0.2);
+    border: 1px solid var(--accent-red);
+    color: var(--accent-red);
+}
+
+.message.success {
+    background: rgba(40, 167, 69, 0.2);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 576px) {
+    .auth-container {
+        margin: 2rem;
+        padding: 1.5rem;
+    }
+    
+    .logo-header h1 {
+        font-size: 2rem;
+    }
+    
+    .auth-links {
+        flex-direction: column;
+        gap: 0.5rem;
+        align-items: center;
+    }
+}
