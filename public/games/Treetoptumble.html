@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Treetop Tumble - Plinko Drop Game</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Fredoka:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #2E7D32;
+            --secondary: #8BC34A;
+            --bg-dark: #1a1a1a;
+            --bg-darker: #121212;
+            --bg-gradient: linear-gradient(135deg, #0d1e0f 0%, #1a1a1a 50%, #0d1e0f 100%);
+            --text-light: #f0f0f0;
+            --text-muted: #ccc;
+            --success: #4CAF50;
+            --error: #f44336;
+            --banana: #FFD54F;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Fredoka', sans-serif;
+            background: var(--bg-gradient);
+            min-height: 100vh;
+            color: #fffcf0;
+            overflow-x: hidden;
+        }
+        .jungle-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><radialGradient id="leaves"><stop offset="0%" stop-color="%234CAF50" stop-opacity="1"/><stop offset="100%" stop-color="%234CAF50" stop-opacity="0"/></radialGradient></defs><path d="M100,100 Q150,50 200,100 T300,100" fill="none" stroke="url(%23leaves)" stroke-width="10"/><path d="M300,200 Q350,150 400,200 T500,200" fill="none" stroke="url(%23leaves)" stroke-width="8"/><path d="M700,150 Q750,100 800,150 T900,150" fill="none" stroke="url(%23leaves)" stroke-width="6"/><path d="M500,300 Q550,250 600,300 T700,300" fill="none" stroke="url(%23leaves)" stroke-width="10"/><path d="M900,250 Q950,200 1000,250 T1100,250" fill="none" stroke="url(%23leaves)" stroke-width="8"/></svg>') repeat;
+            opacity: 0.2;
+            animation: sway 10s ease-in-out infinite alternate;
+            z-index: 0;
+        }
+        @keyframes sway { 
+            0%, 100% { background-position: 0% 0%; } 
+            50% { background-position: 10% 10%; } 
+        }
+        .floating-leaves {
+            position: fixed;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+            z-index: 1;
+        }
+        .leaf {
+            position: absolute;
+            font-size: 1.5rem;
+            opacity: 0.3;
+            animation: leafFloat 20s linear infinite;
+        }
+        @keyframes leafFloat {
+            0% { transform: translateY(110vh) translateX(0) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.3; }
+            90% { opacity: 0.3; }
+            100% { transform: translateY(-10vh) translateX(50vw) rotate(360deg); opacity: 0; }
+        }
+        
+        /* Header styles */
+        .header {
+            background: rgba(46, 125, 50, 0.8);
+            backdrop-filter: blur(8px);
+            border-bottom: 4px solid var(--banana);
+            position: sticky;
+            top: 0;
+            z-index: 40;
+            padding-left: 2.5rem;
+            padding-right: 2.5rem;
+        }
+        .nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+        }
+        .nav-logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .nav-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            animation: bounce 2s infinite;
+        }
+        .nav-title {
+            font-size: 1.5rem;
+            color: var(--banana);
+        }
+        .wallet-info {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+        .balance {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--banana);
+        }
+        
+        /* Main game container */
+        .game-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 2rem;
+            margin: 4rem auto;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.15), rgba(139, 195, 74, 0.15));
+            border-radius: 24px;
+            border: 4px solid var(--banana);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            max-width: 80%;
+        }
+        
+        /* Left column */
+        .game-left-column {
+            flex: 1;
+            min-width: 500px;
+        }
+        
+        /* Right column */
+        .game-right-column {
+            flex: 1;
+            min-width: 400px;
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+        }
+        
+        /* Game title */
+        .game-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .game-title {
+            font-size: clamp(2.5rem, 6vw, 3.5rem);
+            background: linear-gradient(to right, var(--banana), var(--secondary), var(--primary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+            animation: pulse 2s infinite;
+        }
+        .game-subtitle {
+            font-size: 1.3rem;
+            color: var(--banana);
+            margin-bottom: 0.5rem;
+        }
+        
+        /* Stats grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        .stat-card {
+            background: rgba(139, 195, 74, 0.2);
+            border: 2px solid rgba(139, 195, 74, 0.3);
+            border-radius: 16px;
+            padding: 1.2rem;
+            text-align: center;
+            backdrop-filter: blur(5px);
+            transition: all 0.3s ease;
+        }
+        .stat-card:hover {
+            border-color: var(--banana);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(139, 195, 74, 0.2);
+        }
+        .stat-label {
+            color: var(--banana);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+            font-weight: 400;
+        }
+        .stat-value {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: var(--banana);
+            text-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
+        }
+        
+        /* Plinko board */
+        .plinko-container {
+            position: relative;
+            margin: 0 auto;
+            border-radius: 20px;
+            border: 4px solid var(--banana);
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5), 
+                inset 0 2px 4px rgba(255, 255, 255, 0.1),
+                0 0 30px rgba(139, 195, 74, 0.3);
+            background: linear-gradient(135deg, #1e293b, #334155, #475569);
+            overflow: hidden;
+            max-width: 600px;
+            height: 600px;
+        }
+        .plinko-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            animation: scanLine 2s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        #plinkoCanvas {
+            display: block;
+            width: 100%;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+        }
+        
+        /* Controls */
+        .controls {
+            padding: 1.5rem;
+            background: rgba(139, 195, 74, 0.1);
+            border-radius: 16px;
+            border: 2px solid rgba(139, 195, 74, 0.3);
+        }
+        .bet-controls {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .bet-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+            width: 100%;
+            max-width: 400px;
+        }
+        .bet-label {
+            color: var(--banana);
+            font-size: 1.3rem;
+            font-weight: 600;
+        }
+        .bet-input-container {
+            position: relative;
+            width: 100%;
+        }
+        #betInput {
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--banana);
+            background: rgba(0,0,0,0.4);
+            border: 3px solid var(--banana);
+            border-radius: 12px;
+            text-align: center;
+            width: 100%;
+            padding: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.3);
+        }
+        #betInput:focus {
+            box-shadow: 
+                inset 0 2px 4px rgba(0,0,0,0.3),
+                0 0 20px var(--banana);
+            transform: scale(1.02);
+        }
+        #betInput::-webkit-outer-spin-button,
+        #betInput::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        #betInput[type=number] {
+            appearance: textfield;
+            -moz-appearance: textfield;
+        }
+        .quick-bet-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        .quick-bet-btn {
+            background: rgba(139, 195, 74, 0.2);
+            border: 2px solid rgba(139, 195, 74, 0.5);
+            color: var(--banana);
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            font-size: 0.9rem;
+        }
+        .quick-bet-btn:hover {
+            border-color: var(--banana);
+            background: rgba(139, 195, 74, 0.3);
+            transform: translateY(-1px);
+        }
+        
+        /* Drop buttons container */
+        .drop-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .drop-button {
+            flex: 1;
+            background: linear-gradient(45deg, #ec4899, #8b5cf6, #3b82f6, #10b981);
+            background-size: 300% 300%;
+            border: none;
+            color: white;
+            padding: 1.5rem;
+            border-radius: 16px;
+            cursor: pointer;
+            font-family: 'Fredoka One', cursive;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            animation: gradientSpin 4s linear infinite;
+            box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);
+        }
+        .auto-drop-button {
+            background: linear-gradient(45deg, #10b981, #3b82f6, #8b5cf6);
+            animation: gradientSpin 5s linear infinite;
+        }
+        .drop-button:hover:not(:disabled) {
+            transform: translateY(-4px);
+            box-shadow: 0 15px 40px rgba(139, 92, 246, 0.6);
+            animation-duration: 2s;
+        }
+        .drop-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+            animation: none;
+            background: #64748b;
+        }
+        .drop-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .drop-button:hover:not(:disabled)::before {
+            left: 100%;
+        }
+        
+        /* Auto-drop counter */
+        .auto-drop-counter {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 1.1rem;
+            color: var(--banana);
+            font-weight: 500;
+        }
+        .auto-drop-counter span {
+            background: rgba(139, 195, 74, 0.2);
+            padding: 0.3rem 0.8rem;
+            border-radius: 8px;
+            border: 1px solid rgba(139, 195, 74, 0.5);
+        }
+        
+        /* History styles */
+        .history {
+            background: rgba(139, 195, 74, 0.1);
+            border: 2px solid rgba(139, 195, 74, 0.3);
+            border-radius: 16px;
+            padding: 1.5rem;
+            backdrop-filter: blur(5px);
+            flex: 1;
+        }
+        .history-title {
+            font-family: 'Fredoka One', cursive;
+            color: var(--banana);
+            font-size: 1.8rem;
+            text-align: center;
+            margin: 0 0 1.5rem 0;
+            text-shadow: 0 0 10px rgba(139, 195, 74, 0.5);
+        }
+        .history-items {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+        .history-item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(139, 195, 74, 0.2);
+            border-radius: 12px;
+            padding: 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+        .history-item:hover {
+            border-color: var(--banana);
+            background: rgba(255, 255, 255, 0.12);
+            transform: translateY(-2px);
+        }
+        .history-symbol {
+            font-size: 1.5rem;
+            width: 2rem;
+            text-align: center;
+        }
+        .history-payout {
+            font-family: 'Fredoka', sans-serif;
+            color: var(--banana);
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        /* Ball styles */
+        .ball {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--banana));
+            box-shadow: 0 0 10px rgba(255, 213, 79, 0.7);
+            z-index: 10;
+        }
+        
+        /* Animations */
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            25% { background-position: 100% 0%; }
+            50% { background-position: 100% 100%; }
+            75% { background-position: 0% 100%; }
+        }
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
+            50% { opacity: 1; transform: scale(1.2) rotate(180deg); }
+        }
+        @keyframes titleGlow {
+            from { text-shadow: 3px 3px 0px #b45309, 0 0 20px rgba(251, 191, 36, 0.5); }
+            to { text-shadow: 3px 3px 0px #b45309, 0 0 30px rgba(251, 191, 36, 0.8); }
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.9; transform: scale(1.02); }
+        }
+        @keyframes scanLine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        @keyframes gradientSpin {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes celebration {
+            from { 
+                transform: scale(1); 
+                text-shadow: 0 0 20px #10b981; 
+            }
+            to { 
+                transform: scale(1.1); 
+                text-shadow: 0 0 40px #10b981; 
+            }
+        }
+        @keyframes jackpotGlow {
+            from { 
+                transform: scale(1); 
+                text-shadow: 0 0 30px var(--banana); 
+            }
+            to { 
+                transform: scale(1.15); 
+                text-shadow: 0 0 60px var(--banana); 
+            }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        
+        /* Responsive styles */
+        @media (max-width: 1200px) {
+            .game-container {
+                margin: 2rem 1rem;
+                padding: 2rem 0.5rem;
+            }
+            .game-left-column, .game-right-column {
+                min-width: 100%;
+            }
+        }
+        @media (max-width: 900px) {
+            .header {
+                padding-left: 0.5rem;
+                padding-right: 0.5rem;
+            }
+            .nav {
+                padding: 1rem 0.5rem;
+            }
+            .plinko-container {
+                height: 500px;
+            }
+        }
+        @media (max-width: 768px) {
+            .container { padding: 0.5rem; }
+            .game-container {
+                margin: 1rem 0.2rem;
+                padding: 1rem 0.2rem;
+            }
+            .game-title { font-size: 2rem; }
+            .stats-grid { 
+                grid-template-columns: repeat(2, 1fr); 
+                gap: 1rem;
+            }
+            .controls { padding: 1rem; }
+            .drop-button { 
+                font-size: 1.1rem; 
+                padding: 1.2rem;
+            }
+            .quick-bet-buttons {
+                gap: 0.3rem;
+            }
+            .quick-bet-btn {
+                padding: 0.4rem 0.8rem;
+                font-size: 0.8rem;
+            }
+            .plinko-container {
+                height: 400px;
+            }
+        }
+        @media (max-width: 480px) {
+            .paytable-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .drop-buttons {
+                flex-direction: column;
+            }
+            .plinko-container {
+                height: 350px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="jungle-bg"></div>
+    <div class="floating-leaves" id="floatingLeaves"></div>
+    
+    <!-- Header -->
+    <header class="header">
+        <nav class="container">
+            <div class="nav">
+                <div class="nav-logo">
+                    <a href="#" style="display: flex; align-items: center; gap: 1rem; text-decoration: none;">
+                        <div class="nav-icon">🌴</div>
+                        <h1 class="nav-title font-carnival">Treetop Tumble</h1>
+                    </a>
+                </div>
+                <div class="wallet-info">
+                    <div class="balance font-fredoka">
+                        🪙 <span id="balanceDisplay">1,250</span> COINS
+                    </div>
+                    <div class="balance font-fredoka">
+                        🍌 <span id="bananaBalance">5</span> Bananas
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Main Game Content -->
+    <div class="container">
+        <div class="game-container">
+            <!-- Left column: Plinko board and stats -->
+            <div class="game-left-column">
+                <div class="game-header">
+                    <h1 class="game-title font-carnival">🌴 Treetop Tumble 🍌</h1>
+                    <p class="game-subtitle font-fredoka">Drop the ball and watch it tumble through the jungle!</p>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Balance</div>
+                        <div class="stat-value" id="balance">1250 🪙</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Current Bet</div>
+                        <div class="stat-value" id="betDisplay">10 🎫</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Last Win</div>
+                        <div class="stat-value" id="lastWin">0 🍌</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Max Win</div>
+                        <div class="stat-value" id="maxWin">1000x 💎</div>
+                    </div>
+                </div>
+                
+                <div class="plinko-container">
+                    <canvas id="plinkoCanvas" width="600" height="600"></canvas>
+                </div>
+            </div>
+            
+            <!-- Right column: Controls and history -->
+            <div class="game-right-column">
+                <div class="controls">
+                    <div class="bet-controls">
+                        <div class="bet-section">
+                            <label for="betInput" class="bet-label">💰 Bet Amount</label>
+                            <div class="bet-input-container">
+                                <input type="number" id="betInput" value="10" min="1">
+                            </div>
+                            <div class="quick-bet-buttons">
+                                <button class="quick-bet-btn" data-bet="1">1</button>
+                                <button class="quick-bet-btn" data-bet="5">5</button>
+                                <button class="quick-bet-btn" data-bet="10">10</button>
+                                <button class="quick-bet-btn" data-bet="25">25</button>
+                                <button class="quick-bet-btn" data-bet="50">50</button>
+                                <button class="quick-bet-btn" data-bet="100">100</button>
+                                <button class="quick-bet-btn" id="maxBetBtn">MAX</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="drop-buttons">
+                        <button class="drop-button" id="dropBtn">
+                            <span id="dropBtnText">🍌 DROP BALL! 🍌</span>
+                        </button>
+                        <button class="drop-button auto-drop-button" id="autoDropBtn">
+                            <span id="autoDropBtnText">🔄 AUTO DROP (5)</span>
+                        </button>
+                    </div>
+                    
+                    <div class="auto-drop-counter" id="autoDropCounter" style="display: none;">
+                        Auto drops remaining: <span id="remainingDrops">5</span>
+                    </div>
+                </div>
+                
+                <!-- Replace paytable with history -->
+                <div class="history">
+                    <h3 class="history-title">📜 Drop History 📜</h3>
+                    <div class="history-items" id="historyItems">
+                        <!-- History items will be added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            new TreetopTumble();
+            createFloatingLeaves();
+        });
+
+        function createFloatingLeaves() {
+            const leafContainer = document.getElementById('floatingLeaves');
+            if (!leafContainer) return;
+            const leafCount = 12;
+            for (let i = 0; i < leafCount; i++) {
+                const leaf = document.createElement('div');
+                leaf.className = 'leaf';
+                leaf.textContent = '🍃';
+                leaf.style.left = Math.random() * 100 + 'vw';
+                leaf.style.animationDelay = Math.random() * 20 + 's';
+                leaf.style.animationDuration = 15 + Math.random() * 10 + 's';
+                leafContainer.appendChild(leaf);
+            }
+        }
+
+        class TreetopTumble {
+            constructor() {
+                this.canvas = document.getElementById('plinkoCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.ctx.textAlign = 'center';
+                this.ctx.textBaseline = 'middle';
+                
+                // Game state
+                this.balance = 1250;
+                this.currentBet = 10;
+                this.isDropping = false;
+                this.isAutoDropping = false;
+                this.autoDropCount = 0;
+                this.pegRows = 12;
+                this.pegCols = 8;
+                this.pegRadius = 8;
+                this.ballRadius = 12;
+                this.pegSpacing = this.canvas.width / (this.pegCols + 1);
+                this.pegOffset = this.pegSpacing / 2;
+                this.pegPositions = [];
+                this.balls = [];
+                this.dropHistory = [];
+                // Always use the new, limited multipliers and ignore localStorage
+                this.multipliers = [0, 0, 0, 0, 0, 0, 0, 5, 10, 20];
+                const sorted = [...this.multipliers].sort((a, b) => a - b);
+                const arranged = Array(sorted.length);
+                let left = 0, right = sorted.length - 1;
+                for (let i = 0; i < sorted.length; i++) {
+                    if (i % 2 === 0) {
+                        arranged[left++] = sorted[i];
+                    } else {
+                        arranged[right--] = sorted[i];
+                    }
+                }
+                this.multipliers = arranged;
+                this.multiplierPositions = [];
+                this.lastWin = 0;
+                this.freeDrops = 0;
+                this.bananas = 5;
+                this.animationFrameId = null;
+                this.winAnimationStartTime = 0;
+                
+                // DOM elements
+                this.balanceEl = document.getElementById('balance');
+                this.betDisplayEl = document.getElementById('betDisplay');
+                this.lastWinEl = document.getElementById('lastWin');
+                this.maxWinEl = document.getElementById('maxWin');
+                this.betInput = document.getElementById('betInput');
+                this.dropBtn = document.getElementById('dropBtn');
+                this.autoDropBtn = document.getElementById('autoDropBtn');
+                this.autoDropCounter = document.getElementById('autoDropCounter');
+                this.remainingDropsEl = document.getElementById('remainingDrops');
+                this.balanceDisplayEl = document.getElementById('balanceDisplay');
+                this.bananaBalanceEl = document.getElementById('bananaBalance');
+                
+                // Initialize game
+                this.initEventListeners();
+                this.resizeCanvas();
+                this.generatePegs();
+                this.randomizeMultipliers();
+                this.drawBoard();
+                this.updateUI();
+                
+                // Handle window resize
+                window.addEventListener('resize', () => {
+                    this.resizeCanvas();
+                    this.generatePegs();
+                    this.randomizeMultipliers();
+                    this.drawBoard();
+                });
+            }
+            
+            resizeCanvas() {
+                const container = this.canvas.parentElement;
+                const containerWidth = container.clientWidth;
+                const containerHeight = container.clientHeight;
+                
+                // Maintain aspect ratio
+                const aspectRatio = 1;
+                let newWidth = containerWidth;
+                let newHeight = containerWidth * aspectRatio;
+                
+                if (newHeight > containerHeight) {
+                    newHeight = containerHeight;
+                    newWidth = containerHeight / aspectRatio;
+                }
+                
+                this.canvas.width = newWidth;
+                this.canvas.height = newHeight;
+                
+                // Recalculate peg spacing based on new width
+                this.pegSpacing = this.canvas.width / this.pegCols;
+                this.pegOffset = this.pegSpacing / 2;
+            }
+
+            initEventListeners() {
+                // Quick bet buttons
+                document.querySelectorAll('.quick-bet-btn').forEach(btn => {
+                    if(btn.id === 'maxBetBtn') {
+                        btn.addEventListener('click', () => {
+                            this.currentBet = this.balance;
+                            this.updateBetInput();
+                        });
+                    } else {
+                        btn.addEventListener('click', () => {
+                            this.currentBet = parseInt(btn.dataset.bet);
+                            this.updateBetInput();
+                        });
+                    }
+                });
+
+                // Bet input
+                this.betInput.addEventListener('input', () => {
+                    let newBet = parseInt(this.betInput.value) || 1;
+                    if(newBet < 1) newBet = 1;
+                    if(newBet > this.balance) newBet = this.balance;
+                    this.currentBet = newBet;
+                    this.updateBetInput();
+                });
+
+                // Drop button
+                this.dropBtn.addEventListener('click', () => {
+                    if(!this.isDropping && !this.isAutoDropping) this.dropBall();
+                });
+                
+                // Auto drop button
+                this.autoDropBtn.addEventListener('click', () => {
+                    if(this.isDropping || this.isAutoDropping) return;
+                    
+                    if (this.isAutoDropping) {
+                        this.stopAutoDrop();
+                    } else {
+                        this.startAutoDrop(5);
+                    }
+                });
+            }
+
+            updateBetInput() {
+                this.betInput.value = this.currentBet;
+                this.betDisplayEl.textContent = `${this.currentBet} 🎫`;
+            }
+            
+            generatePegs() {
+                this.pegPositions = [];
+                const startY = this.pegSpacing * 1.5;
+                for (let row = 0; row < this.pegRows; row++) {
+                    const rowPegs = [];
+                    const colsInRow = this.pegCols - (row % 2);
+                    const offset = (row % 2) ? this.pegOffset : 0;
+                    for (let col = 0; col < colsInRow; col++) {
+                        // Fill the width evenly
+                        const x = offset + col * this.pegSpacing + this.pegOffset;
+                        const y = startY + row * this.pegSpacing * 0.8;
+                        rowPegs.push({ x, y });
+                    }
+                    this.pegPositions.push(rowPegs);
+                }
+            }
+            
+            randomizeMultipliers() {
+                // Always use the new, limited multipliers and ignore localStorage
+                this.multipliers = [0, 0, 0, 0, 0, 0, 0, 5, 10, 20];
+                const sorted = [...this.multipliers].sort((a, b) => a - b);
+                const arranged = Array(sorted.length);
+                let left = 0, right = sorted.length - 1;
+                for (let i = 0; i < sorted.length; i++) {
+                    if (i % 2 === 0) {
+                        arranged[left++] = sorted[i];
+                    } else {
+                        arranged[right--] = sorted[i];
+                    }
+                }
+                this.multipliers = arranged;
+                // Create positions for each multiplier at the bottom
+                this.multiplierPositions = [];
+                const bucketWidth = this.canvas.width / this.multipliers.length;
+                const bucketTop = this.canvas.height - 40;
+                for (let i = 0; i < this.multipliers.length; i++) {
+                    this.multiplierPositions.push({
+                        x: i * bucketWidth + bucketWidth / 2,
+                        y: bucketTop + 20,
+                        width: bucketWidth,
+                        multiplier: this.multipliers[i]
+                    });
+                }
+            }
+            
+            drawBoard() {
+                this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw board background
+                this.ctx.fillStyle = '#1a2e22';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                // Draw pegs
+                this.ctx.fillStyle = '#FFD54F';
+                for (const row of this.pegPositions) {
+                    for (const peg of row) {
+                        this.ctx.beginPath();
+                        this.ctx.arc(peg.x, peg.y, this.pegRadius, 0, Math.PI * 2);
+                        this.ctx.fill();
+                        this.ctx.shadowColor = 'rgba(255, 213, 79, 0.7)';
+                        this.ctx.shadowBlur = 10;
+                        this.ctx.fill();
+                        this.ctx.shadowColor = 'transparent';
+                        this.ctx.shadowBlur = 0;
+                    }
+                }
+                
+                // Draw multiplier zones at the bottom
+                const bucketHeight = 40;
+                const bucketTop = this.canvas.height - bucketHeight;
+                
+                for (let i = 0; i < this.multiplierPositions.length; i++) {
+                    const pos = this.multiplierPositions[i];
+                    const multiplier = pos.multiplier;
+                    
+                    // Choose color based on multiplier value
+                    let color;
+                    if (multiplier === 1) color = '#4CAF50';
+                    else if (multiplier === 5) color = '#2196F3';
+                    else if (multiplier === 10) color = '#3F51B5';
+                    else if (multiplier === 20) color = '#9C27B0';
+                    else color = '#FFD700'; // 1000x
+                    
+                    this.ctx.fillStyle = color;
+                    this.ctx.fillRect(i * pos.width, bucketTop, pos.width, bucketHeight);
+                    
+                    // Draw multiplier value
+                    this.ctx.fillStyle = '#fff';
+                    this.ctx.font = 'bold 14px Fredoka';
+                    this.ctx.textAlign = 'center';
+                    this.ctx.fillText(
+                        `${multiplier}x`, 
+                        i * pos.width + pos.width / 2, 
+                        bucketTop + bucketHeight / 2 + 5
+                    );
+                }
+                
+                // Draw balls
+                for (const ball of this.balls) {
+                    this.ctx.fillStyle = ball.color;
+                    this.ctx.beginPath();
+                    this.ctx.arc(ball.x, ball.y, this.ballRadius, 0, Math.PI * 2);
+                    this.ctx.fill();
+                    this.ctx.shadowColor = 'rgba(255, 255, 255, 0.7)';
+                    this.ctx.shadowBlur = 10;
+                    this.ctx.fill();
+                    this.ctx.shadowColor = 'transparent';
+                    this.ctx.shadowBlur = 0;
+                }
+            }
+            
+            dropBall() {
+                if (this.isDropping || this.balance < this.currentBet) return;
+                
+                // Deduct bet from balance
+                this.balance -= this.currentBet;
+                this.updateUI();
+                
+                // Reset win state
+                this.lastWin = 0;
+                
+                // Set dropping state
+                this.isDropping = true;
+                
+                // Disable buttons during drop
+                this.dropBtn.disabled = true;
+                this.autoDropBtn.disabled = true;
+                
+                // Create new ball at random x position near the top
+                const ball = {
+                    x: Math.random() * (this.canvas.width - 100) + 50,
+                    y: 30,
+                    vx: 0,
+                    vy: 0,
+                    color: this.getRandomBallColor(),
+                    multiplier: 0,
+                    isActive: true
+                };
+                
+                this.balls.push(ball);
+                
+                // Start animation
+                this.animateDrop();
+            }
+            
+            getRandomBallColor() {
+                const colors = [
+                    '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
+                    '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', 
+                    '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
+                    '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+                ];
+                return colors[Math.floor(Math.random() * colors.length)];
+            }
+            
+            animateDrop() {
+                const gravity = 0.2;
+                const friction = 0.99;
+                const bucketHeight = 40;
+                const bucketTop = this.canvas.height - bucketHeight;
+                let activeBalls = 0;
+                
+                // Update ball positions
+                for (const ball of this.balls) {
+                    if (!ball.isActive) continue;
+                    
+                    // Apply gravity
+                    ball.vy += gravity;
+                    
+                    // Apply friction
+                    ball.vx *= friction;
+                    ball.vy *= friction;
+                    
+                    // Update position
+                    ball.x += ball.vx;
+                    ball.y += ball.vy;
+                    
+                    // Check for peg collisions
+                    for (const row of this.pegPositions) {
+                        for (const peg of row) {
+                            const dx = ball.x - peg.x;
+                            const dy = ball.y - peg.y;
+                            const distance = Math.sqrt(dx * dx + dy * dy);
+                            
+                            if (distance < this.pegRadius + this.ballRadius) {
+                                // Collision detected
+                                const angle = Math.atan2(dy, dx);
+                                const speed = Math.sqrt(ball.vx * ball.vx + ball.vy * ball.vy);
+                                
+                                // Bounce off peg
+                                ball.vx = Math.cos(angle) * speed * 0.8;
+                                ball.vy = Math.sin(angle) * speed * 0.8;
+                                
+                                // Add some randomness to the bounce
+                                ball.vx += (Math.random() - 0.5) * 2;
+                                ball.vy += (Math.random() - 0.5) * 1;
+                                
+                                // Move ball outside peg to prevent sticking
+                                ball.x = peg.x + (this.pegRadius + this.ballRadius) * Math.cos(angle);
+                                ball.y = peg.y + (this.pegRadius + this.ballRadius) * Math.sin(angle);
+                            }
+                        }
+                    }
+                    
+                    // Check for wall collisions
+                    if (ball.x < this.ballRadius) {
+                        ball.x = this.ballRadius;
+                        ball.vx *= -0.8;
+                    } else if (ball.x > this.canvas.width - this.ballRadius) {
+                        ball.x = this.canvas.width - this.ballRadius;
+                        ball.vx *= -0.8;
+                    }
+                    
+                    // Check if ball landed in a bucket
+                    if (ball.y > bucketTop - this.ballRadius) {
+                        ball.isActive = false;
+                        
+                        // Determine which multiplier zone the ball landed in
+                        for (const zone of this.multiplierPositions) {
+                            if (ball.x >= zone.x - zone.width/2 && ball.x <= zone.x + zone.width/2) {
+                                ball.multiplier = zone.multiplier;
+                                
+                                // Calculate win
+                                this.lastWin = this.currentBet * ball.multiplier;
+                                this.balance += this.lastWin;
+                                
+                                // Show win notification for anything more than 1x
+                                if (ball.multiplier > 1) {
+                                    setTimeout(() => {
+                                        this.showWin('win', `${ball.multiplier}X WIN!`, `+${this.lastWin} coins!`);
+                                    }, 300);
+                                }
+                                break;
+                            }
+                        }
+                        if (!ball.addedToHistory) {
+                            this.dropHistory.push({
+                                multiplier: ball.multiplier,
+                                payout: ball.multiplier * this.currentBet
+                            });
+                            ball.addedToHistory = true;
+                        }
+                    } else {
+                        activeBalls++;
+                    }
+                }
+                
+                // Remove inactive balls (older than 3 seconds)
+                this.balls = this.balls.filter(ball => {
+                    if (!ball.isActive) {
+                        ball.timeInactive = ball.timeInactive || Date.now();
+                        return Date.now() - ball.timeInactive < 3000;
+                    }
+                    return true;
+                });
+                
+                // Redraw board
+                this.drawBoard();
+                
+                // Check if all balls have settled
+                if (activeBalls === 0) {
+                    this.isDropping = false;
+                    
+                    // Re-enable buttons if not auto-dropping
+                    if (!this.isAutoDropping) {
+                        this.dropBtn.disabled = false;
+                        this.autoDropBtn.disabled = false;
+                    }
+                    
+                    // Update UI
+                    this.updateUI();
+                    
+                    // Handle auto-drop continuation
+                    if (this.isAutoDropping && this.autoDropCount > 0) {
+                        setTimeout(() => {
+                            this.autoDropCount--;
+                            this.remainingDropsEl.textContent = this.autoDropCount;
+                            this.dropBall();
+                        }, 1000);
+                    } else if (this.isAutoDropping) {
+                        this.stopAutoDrop();
+                    }
+                    
+                    // Handle free drops
+                    if (this.freeDrops > 0) {
+                        this.freeDrops--;
+                        setTimeout(() => {
+                            this.dropBall();
+                        }, 1000);
+                    }
+                } else {
+                    this.animationFrameId = requestAnimationFrame(() => this.animateDrop());
+                }
+            }
+            
+            startAutoDrop(count = 5) {
+                if (this.balance < this.currentBet) return;
+                
+                this.isAutoDropping = true;
+                this.autoDropCount = count;
+                this.remainingDropsEl.textContent = count;
+                this.autoDropCounter.style.display = 'flex';
+                this.autoDropBtn.textContent = '🛑 STOP AUTO DROP';
+                this.dropBall();
+            }
+            
+            stopAutoDrop() {
+                this.isAutoDropping = false;
+                this.autoDropCount = 0;
+                this.autoDropCounter.style.display = 'none';
+                this.autoDropBtn.textContent = '🔄 AUTO DROP (5)';
+                this.dropBtn.disabled = false;
+                this.autoDropBtn.disabled = false;
+            }
+            
+            showWin(type, title, message) {
+                // Remove any existing notification first
+                document.querySelectorAll('.win-notification').forEach(n => n.remove());
+                
+                // Create win notification
+                const notification = document.createElement('div');
+                notification.className = `win-notification ${type}`;
+                notification.style.position = 'fixed';
+                notification.style.zIndex = '9999';
+                notification.style.background = 'rgba(30, 41, 59, 0.98)';
+                notification.style.border = '3px solid #FFD54F';
+                notification.style.borderRadius = '18px';
+                notification.style.padding = '2rem 2.5rem';
+                notification.style.color = '#FFD54F';
+                notification.style.fontFamily = "'Fredoka', sans-serif";
+                notification.style.fontSize = '1.5rem';
+                notification.style.boxShadow = '0 10px 40px rgba(0,0,0,0.5)';
+                notification.style.textAlign = 'center';
+                notification.style.left = '50%';
+                notification.style.top = '30%';
+                notification.style.transform = 'translate(-50%, -50%)';
+                notification.style.transition = 'opacity 1s';
+                
+                const icon = type === 'bonus' ? '🍌' : '💰';
+                
+                notification.innerHTML = `
+                    <h3 style="margin-bottom:0.5rem;">${icon} ${title} ${icon}</h3>
+                    <p style="margin-bottom:1rem;">${message}</p>
+                    ${type === 'win' ? `<div class="win-amount" style="font-size:2rem;font-weight:bold;">+${this.lastWin} 🪙</div>` : ''}
+                `;
+                
+                document.body.appendChild(notification);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    notification.style.opacity = '0';
+                    setTimeout(() => notification.remove(), 1000);
+                }, 3000);
+            }
+            
+            updateUI() {
+                this.balanceEl.textContent = `${this.balance} 🪙`;
+                this.betDisplayEl.textContent = `${this.currentBet} 🎫`;
+                this.lastWinEl.textContent = `${this.lastWin} 🍌`;
+                this.balanceDisplayEl.textContent = this.balance.toLocaleString();
+                this.bananaBalanceEl.textContent = this.bananas;
+                this.betInput.value = this.currentBet;
+                
+                // Update history display
+                this.updateHistory();
+            }
+            
+            updateHistory() {
+                const historyContainer = document.getElementById('historyItems');
+                historyContainer.innerHTML = '';
+                // Show all drops, newest first
+                const historyToShow = this.dropHistory.slice().reverse();
+                historyToShow.forEach(drop => {
+                    const item = document.createElement('div');
+                    item.className = 'history-item';
+                    if (drop.multiplier === 0) {
+                        item.innerHTML = `
+                            <div class="history-symbol">0x</div>
+                            <div class="history-payout" style="color:#f44336">LOSS</div>
+                        `;
+                    } else {
+                        item.innerHTML = `
+                            <div class="history-symbol">${drop.multiplier}x</div>
+                            <div class="history-payout">+${drop.payout} 🪙</div>
+                        `;
+                    }
+                    historyContainer.appendChild(item);
+                });
+            }
+        }
+    </script>
+</body>
+</html>
